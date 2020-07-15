@@ -24,7 +24,7 @@ AppModule = __decorate([
         imports: [
             typeorm_1.TypeOrmModule.forRoot({
                 type: 'mysql',
-                host: 'localhost',
+                host: 'whiteboard.com.mx',
                 port: 3306,
                 username: 'root_abra12',
                 password: 'root_abra12',

@@ -1,19 +1,15 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else
-        for (var i = decorators.length - 1; i >= 0; i--)
-            if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __metadata = (this && this.__metadata) || function(k, v) {
+var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function(paramIndex, decorator) {
-    return function(target, key) { decorator(target, key, paramIndex); }
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
@@ -27,16 +23,15 @@ let UsersController = class UsersController {
         this.usersService = usersService;
     }
     create(createUserDto, response, request) {
-
-        let usersservice = this.usersService;
-        if (!createUserDto.name || createUserDto.name.length == 0 || specialReg.test(createUserDto.name) || (typeof createUserDto.name != "string")) {
-            throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: request.url, timestamp: Date().toLocaleString(), message: 'Error en el nombre usuario.' }, common_1.HttpStatus.BAD_REQUEST);
+        let userservice = this.usersService;
+        if (!createUserDto.name || createUserDto.name.length == 0 || (typeof createUserDto.name != "string")) {
+            throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: request.url, timestamp: Date().toLocaleString(), message: 'Error en el nombre de usuario.' }, common_1.HttpStatus.BAD_REQUEST);
         }
         if (!createUserDto.lastName || createUserDto.lastName.length == 0 || specialReg.test(createUserDto.lastName) || (typeof createUserDto.lastName != "string")) {
             throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: request.url, timestamp: Date().toLocaleString(), message: 'Error en el apellido del usuario.' }, common_1.HttpStatus.BAD_REQUEST);
         }
         if (!createUserDto.Phone || createUserDto.Phone.length == 0 || specialRegnum.test(createUserDto.Phone) || (typeof createUserDto.Phone != "string")) {
-            throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: request.url, timestamp: Date().toLocaleString(), message: 'Error en el telefono del usuario.' }, common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: request.url, timestamp: Date().toLocaleString(), message: 'Error en el teléfono del usuario.' }, common_1.HttpStatus.BAD_REQUEST);
         }
         var request = require('request');
         var params = {
@@ -44,17 +39,18 @@ let UsersController = class UsersController {
             'api-key': 'Irud5B2GdKdroUGQHMLyszTgaE1TJTmqiU1wxbfauHLn5Yla',
             'number': createUserDto.Phone.replace(/[^\d]/g, '')
         };
-        request.post('https://neutrinoapi.net/phone-validate', { form: params }, function(error, res, body) {
+        request.post('https://neutrinoapi.net/phone-validate', { form: params }, function (error, res, body) {
             if (!error && res.statusCode == 200) {
-                var result = JSON.parse(body); //Aqui se puede salvar si se requiere la información extra de la validación del teléfono.
+                var result = JSON.parse(body);
                 if (result.valid) {
-                    usersservice.createUser(createUserDto).then(user => {
+                    userservice.createUser(createUserDto).then(user => {
                         response.status(200).json(user);
                     }).catch(() => {
                         response.status(common_1.HttpStatus.FORBIDDEN).json({ user: 'Error al crear el usuario' });
                     });
-                } else {
-                    throw new common_1.HttpException({ status: common_1.HttpStatus.CONFLICT, path: request.url, timestamp: Date().toLocaleString(), message: 'Error el numero telefonico  no es valido.' }, common_1.HttpStatus.CONFLICT);
+                }
+                else {
+                    throw new common_1.HttpException({ status: common_1.HttpStatus.CONFLICT, path: request.url, timestamp: Date().toLocaleString(), message: 'Error el número telefónico no es valido.' }, common_1.HttpStatus.CONFLICT);
                 }
             }
         });

@@ -23,41 +23,65 @@ let ContactsController = class ContactsController {
         this.contactsService = contactsService;
     }
     create(createContactoDto, response, req) {
+        let contactservice = this.contactsService;
         if (!req.body.contactName || req.body.contactName.length == 0 || specialReg.test(req.body.contactName) || (typeof req.body.contactName != "string")) {
             throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el nombre del contacto.' }, common_1.HttpStatus.BAD_REQUEST);
         }
-        if (!req.body.idUser || specialRegnum.test(req.body.idUser) || (typeof req.body.idUser != "string")) {
+        if (!req.body.idUser || specialRegnum.test(req.body.idUser) || (typeof req.body.idUser != "number")) {
             throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el id del usuario.' }, common_1.HttpStatus.BAD_REQUEST);
         }
         if (!req.body.Phone || req.body.Phone.length == 0 || specialRegnum.test(req.body.Phone) || (typeof req.body.Phone != "string")) {
-            throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el telefono del contacto.' }, common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el teléfono del contacto.' }, common_1.HttpStatus.BAD_REQUEST);
         }
-        this.contactsService.createContact(createContactoDto).then(contacto => {
-            response.status(200).json(contacto);
-        }).catch(() => {
-            response.status(common_1.HttpStatus.FORBIDDEN).json({ contacto: 'Error al crear el contacto' });
+        var request = require('request');
+        var params = {
+            'user-id': 'abraxasdf',
+            'api-key': 'Irud5B2GdKdroUGQHMLyszTgaE1TJTmqiU1wxbfauHLn5Yla',
+            'number': createContactoDto.Phone.replace(/[^\d]/g, '')
+        };
+        request.post('https://neutrinoapi.net/phone-validate', { form: params }, function (error, res, body) {
+            if (!error && res.statusCode == 200) {
+                var result = JSON.parse(body);
+                if (result.valid) {
+                    contactservice.createContact(createContactoDto).then(contacto => {
+                        response.status(200).json(contacto);
+                    }).catch(() => {
+                        response.status(common_1.HttpStatus.FORBIDDEN).json({ contacto: 'Error al editar un contacto' });
+                    });
+                }
+                else {
+                    response.status(common_1.HttpStatus.FORBIDDEN).json({
+                        "status": "error",
+                        "message": "Error  telefono(" + createContactoDto.Phone + ") no valido."
+                    }).send();
+                }
+            }
         });
     }
     newcontacts(createContactoDto, response, idUser, req) {
         let contactservice = this.contactsService;
         if (req.body.length != undefined) {
+            let indexarray = 0;
             var array_obj = [];
             req.body.forEach(element => {
-                if (!element.contactName || element.contactName.length == 0 || specialReg.test(element.contactName) || (typeof element.contactName != "string")) {
+                indexarray++;
+                if (!element.contactName || element.contactName.length == 0 || (typeof element.contactName != "string")) {
                     throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el nombre del contacto.' }, common_1.HttpStatus.BAD_REQUEST);
                 }
-                if (!element.idUser || specialRegnum.test(element.idUser) || (typeof element.idUser != "string")) {
+                if (!element.idUser || specialRegnum.test(element.idUser) || (typeof element.idUser != "number")) {
                     throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el id del usuario.' }, common_1.HttpStatus.BAD_REQUEST);
                 }
                 if (!element.Phone || element.Phone.length == 0 || specialRegnum.test(element.Phone) || (typeof element.Phone != "string")) {
                     throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el telefono del contacto.' }, common_1.HttpStatus.BAD_REQUEST);
                 }
                 this.contactsService.createContact_1(element).then(contacto => {
+                    if (indexarray === req.body.length) {
+                        response.status(200).json({ message: 'Contactos agregados corréctamente.' });
+                    }
                 }).catch(() => {
                     response.status(common_1.HttpStatus.FORBIDDEN).json({ contacto: 'Error al crear el contacto' });
                 });
             });
-            response.status(common_1.HttpStatus.OK).json(array_obj);
         }
         else {
             if (!createContactoDto.contactName || createContactoDto.contactName.length == 0 || specialReg.test(createContactoDto.contactName) || (typeof createContactoDto.contactName != "string")) {
@@ -78,7 +102,6 @@ let ContactsController = class ContactsController {
             request.post('https://neutrinoapi.net/phone-validate', { form: params }, function (error, res, body) {
                 if (!error && res.statusCode == 200) {
                     var result = JSON.parse(body);
-                    console.log(result);
                     if (result.valid) {
                         contactservice.createContact(createContactoDto).then(contacto => {
                             response.status(200).json(contacto);
@@ -103,7 +126,7 @@ let ContactsController = class ContactsController {
         this.contactsService.findContactsfromUser(parseInt(idUser)).then(contactsList => {
             response.status(200).json(contactsList);
         }).catch(() => {
-            throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: request.url, timestamp: Date().toLocaleString(), message: 'Error al listar los contactos .' }, common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException({ status: common_1.HttpStatus.FORBIDDEN, path: request.url, timestamp: Date().toLocaleString(), message: 'Error al listar los contactos.' }, common_1.HttpStatus.FORBIDDEN);
         });
     }
     compareContacts(response, idUser1, idUser2, request) {
@@ -129,33 +152,31 @@ let ContactsController = class ContactsController {
             var array_obj = [];
             req.body.forEach(element => {
                 indexarray++;
-                console.log('indexarray:' + indexarray);
-                console.log('req.body.length:' + req.body.length);
-                if (!element.id || specialRegnum.test(element.id) || (typeof element.id != "string")) {
+                if (!element.id || specialRegnum.test(element.id) || (typeof element.id != "number")) {
                     throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el id del contacto.' }, common_1.HttpStatus.BAD_REQUEST);
                 }
                 if (!element.contactName || element.contactName.length == 0 || specialReg.test(element.contactName) || (typeof element.contactName != "string")) {
                     throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el nombre del contacto.' }, common_1.HttpStatus.BAD_REQUEST);
                 }
                 if (!element.Phone || element.Phone.length == 0 || specialRegnum.test(element.Phone) || (typeof element.Phone != "string")) {
-                    throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el numero de telefono.' }, common_1.HttpStatus.BAD_REQUEST);
+                    throw new common_1.HttpException({ status: common_1.HttpStatus.BAD_REQUEST, path: req.url, timestamp: Date().toLocaleString(), message: 'Error en el teléfono del contacto.' }, common_1.HttpStatus.BAD_REQUEST);
                 }
                 contactservice.updateContacts(parseInt(element.id), element).then(contacto => {
                     if (indexarray === req.body.length) {
-                        response.status(200).json(array_obj);
+                        response.status(200).json({ message: 'Contactos editatos corréctamente.' });
                     }
                 }).catch(() => { });
             });
         }
         else {
             if (!idContact) {
-                throw new common_1.HttpException('Error al no enviar el ID de contacto', common_1.HttpStatus.NOT_FOUND);
+                throw new common_1.HttpException('Error al no enviar el ID de contacto', common_1.HttpStatus.BAD_REQUEST);
             }
             if (!req.body.contactName) {
-                throw new common_1.HttpException('Error al no enviar el Nombre de contacto', common_1.HttpStatus.NOT_FOUND);
+                throw new common_1.HttpException('Error al no enviar el Nombre de contacto', common_1.HttpStatus.BAD_REQUEST);
             }
             if (!req.body.Phone) {
-                throw new common_1.HttpException('Error al no enviar el telefono', common_1.HttpStatus.NOT_FOUND);
+                throw new common_1.HttpException('Error al no enviar el telefono', common_1.HttpStatus.BAD_REQUEST);
             }
             var request = require('request');
             var params = {
@@ -166,10 +187,9 @@ let ContactsController = class ContactsController {
             request.post('https://neutrinoapi.net/phone-validate', { form: params }, function (error, res, body) {
                 if (!error && res.statusCode == 200) {
                     var result = JSON.parse(body);
-                    console.log(result);
                     if (result.valid) {
                         contactservice.updateContact(parseInt(idContact), updateContactoDto).then(contacto => {
-                            response.status(common_1.HttpStatus.OK).json(contacto);
+                            response.status(common_1.HttpStatus.OK).json({ message: 'Contactos editatos corréctamente.' });
                         }).catch(() => {
                             response.status(common_1.HttpStatus.FORBIDDEN).json({ contacto: 'Error al editar un contacto' });
                         });

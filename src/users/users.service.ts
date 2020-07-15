@@ -17,7 +17,6 @@ export class UsersService {
     }
 
     async createUser( userNuevo: CreateUserDto): Promise<User>{
-        console.log('userNuevo:', userNuevo)
 
         if(!userNuevo.name){ 
             throw new HttpException('Error al no enviar el nombre de usuario', HttpStatus.NOT_FOUND)
