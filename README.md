@@ -19,7 +19,7 @@ Instalar Postman - https://www.postman.com/
 
 ### 1. Ejecutar en terminal:
 ```
-$ docker run --publish 3000:3000 --detach  --name bnext_container abraxasdf/bnext:latest 
+$ docker run --publish 3000:3000 --name bnext_container abraxasdf/bnext:latest 
 ```
 
 ### 2.- Hacer las lamadas a traves de postman  o  su programa favorito:
