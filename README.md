@@ -2,6 +2,7 @@
 <p align="center">
   <img src="https://bnext.io/img/logos/logo.svg" width="120" alt="Bnext Logo" /></a>
 </p>
+
 ## Introducción
 
 Se realiza un backend para recibir y/o actualizar contactos realizado con NestJS en una imagen docker con conexión a una db MYSQL remota. 
